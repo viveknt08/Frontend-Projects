@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><test></test></title>
+  <link
+    href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css"
+    rel="stylesheet"
+  />
+  <script type="module" defer src="script.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+  <!-- Firebase App (the core Firebase SDK) -->
+  <script src="https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js"></script>
+  <!-- Firebase Authentication -->
+  <script src="https://www.gstatic.com/firebasejs/9.21.0/firebase-auth.js"></script>
+  
+</head>
+<body>
+  <div>
+    <div id="nav1">
+      <a href="https://www.instagram.com/accounts/login/?hl=en">
+        <i class="ri-fire-fill"></i>
+      </a>
+      <h1>test</h1>
+      <div class="auth-buttons">
+        <div class="auth-buttons">
+            <button class="login-btn" onclick="openModal('login')">Login</button>
+          
+            <!-- Profile Dropdown (Hidden Initially) -->
+            <div class="profile-dropdown" style="display: none;">
+              <img src="https://www.w3schools.com/howto/img_avatar.png" class="profile-icon" onclick="toggleDropdown()" alt="Profile">
+              <div class="dropdown-menu" id="dropdownMenu">
+               
+                <a href="#" onclick="logout()">Log Out</a>
+              </div>
+            </div>
+          </div>
+      </div>
+    </div>
+  </div>
+  <!-- Sidebar -->
+<div id="sidebar" class="sidebar">
+  <button id="toggleSidebar"><i class="ri-menu-line"></i></button>
+  <div class="sidebar-content">
+    <a href="#" class="sidebar-item" data-page="home.html"><i class="ri-home-line"></i> Home</a>
+    <a href="#" class="sidebar-item" data-page="articles.html"><i class="ri-article-line"></i> Articles</a>
+    <a href="#" class="sidebar-item" data-page="history.html"><i class="ri-history-line"></i> History</a>
+    <a href="history.html" class="sidebar-item"><i class="ri-history-line"></i> History</a>
+    <a href="#" class="sidebar-item settings" data-page="settings.html"><i class="ri-settings-line"></i> Settings</a>
+  </div>
+</div>
+
+  <!-- Login & Signup Modal -->
+  <div id="authModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+
+      <!-- Login Form -->
+      <form id="loginForm" class="auth-form">
+        <h2>Login</h2>
+        <input type="email" placeholder="Email" id="loginEmail" required />
+        <input type="password" placeholder="Password" id="loginPassword" required />
+        <button type="submit">Login</button>
+        <!-- Continue with Google button added -->
+        <button type="button" id="googleLoginBtn" class="google-btn">Continue with Google</button>
+        <p>
+          Don't have an account?
+          <a href="#" onclick="openModal('signup')">Sign up here</a>
+        </p>
+      </form>
+
+      <!-- Signup Form -->
+      <form id="signupForm" class="auth-form">
+        <h2>Sign Up</h2>
+        <input type="text" placeholder="Full Name" id="signupName" required />
+        <input type="email" placeholder="Email" id="signupEmail" required />
+        <input type="password" placeholder="Password" id="signupPassword" required />
+        <button type="submit">Sign Up</button>
+        <p>
+          Already have an account?
+          <a href="#" onclick="openModal('login')">Login</a>
+        </p>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
