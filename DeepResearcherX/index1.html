@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Chat Interface</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style1.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      
+      <input type="checkbox" id="sidebar-toggle" class="sidebar-toggle">
+      <label for="sidebar-toggle" class="sidebar-toggle-label">
+        <span class="toggle-icon">☰</span>
+      </label>
+
+      <aside class="sidebar">
+
+        
+
+        <button class="new-chat-btn" onclick="newChat()">+ New Chat</button>
+
+        
+        <div class="switch-button">
+            <button class="chat-button" id="chat-button">History</button>
+            <button class="data-button" id="data-button">Data</button>
+        </div>
+  
+        <div class="chat-list" id="chat-list">
+          <form id="chat-history" action="/" method="post">
+            <input type="hidden" name="button_value" id="button-value">
+          </form>
+        </div>
+        
+        <div class="data-list" id="data-list">
+          
+        </div>
+        
+
+        <div class="profile-section">
+          <div class="profile-btn" onclick="goToProfile()">
+            <span class="profile-name">My Profile</span>
+            <img src="https://cdnb.artstation.com/p/assets/images/images/084/124/297/large/matthew-blank-profile-photo-2.jpg?1737590042" 
+                 alt="Profile" class="profile-img">
+          </div>
+        </div>
+
+      </aside>
+
+     <main class="main-content">
+      
+        <div class="chat-area">
+          <div class="welcome-message" id="welcomeMessage">
+            <p><b><i>OpenResearcher - X</i></b></p>
+          </div>
+        </div>
+
+        <form id="messageForm" method="post" action="/prompt" enctype="multipart/form-data">
+          <div class="chat-container">
+            <div class="chat-display"></div> <!-- Your messages appear here -->
+            <div class="chat-input">
+              <!-- your input field, send button, model/type dropdowns etc -->
+            </div>
+          </div>
+          
+          <div class="input-container">
+            <div class="input-area">
+              <!-- for selected file -->
+              <div id="fileInfo" class="file-info"></div> 
+              
+              <textarea class = "text-area" name="message" placeholder="Write your message here..." required></textarea>
+              <div class="bottom-controls">
+                <div class="left-controls">
+
+                  <label for="fileUpload" class="upload-btn" title="Upload file">+</label>
+                  <input type="file" id="fileUpload" name="file" class="upload-btn" style="display: none;">
+
+                  <select name="model" class="model-dropdown" required>
+                    <option class = "model-value" value="">Search Model</option>
+                    <option class = "model-value" value="Deepseek R1">Deepseek R1</option>
+                    <option class = "model-value" value="ChatGPT">ChatGPT</option>
+                    <option class = "model-value" value="Grok">Grok</option>
+                    <option class = "model-value" value="Google">Google</option>
+                  </select>
+                
+                  <select name="search" class="search-dropdown" required>
+                    <option class = "search-value" value="">Search Type</option>
+                    <option class = "search-value" value="Web Search">Web Search</option>
+                    <option class = "search-value" value="Pro Search">Pro Search</option>
+                    <option class = "search-value" value="Deep Research">Deep Research</option>
+                    <option class = "search-value" value="Pdf/links Talks">Pdf/links Talks</option>
+                  </select>
+                  <select name="Depth" class="Depth-value" required>
+                    <option class = "Depth-value" value="">Depth-value</option>
+                    <option class = "Depth-value" value="1">1</option>
+                    <option class = "Depth-value" value="2">2</option>
+                    <option class = "Depth-value" value="3">3</option>
+                    <option class = "Depth-value" value="4">4</option>
+                    <option class = "Depth-value" value="5">5</option>
+                  </select>
+                  
+                  <button type="submit" class="send-btn">Send</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </main>
+    </div> 
+    <script>
+      let count = 1
+      function goToProfile() {
+              window.location.href = `/user/{{ user_id }}/profile`;
+          }
+      function newChat(){
+        event.preventDefault(); 
+        document.querySelector(".chat-area").innerHTML=""
+        const history_form = document.getElementById("chat-history");
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = `History ${count}`;
+        btn.value = count;
+        btn.classList.add("chat-item");
+        
+        btn.addEventListener("click", async function () {
+            document.getElementById("button-value").value = this.value;
+            const formData = new FormData(history_form);
+            try {
+                const response = await fetch("/history/thread", {
+                    method: "POST",
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const result = await response.json(); 
+                    const userMessages = result.user_message;
+                    const aiMessages = result.ai_response;
+                    const chatArea = document.querySelector(".chat-area");
+                    chatArea.innerHTML="";
+                    for (let i = 0; i < userMessages.length; i++) {
+                        //user message
+                        let userDiv = document.createElement("div");
+                        userDiv.classList.add("chat-message", "user-message");
+                        userDiv.textContent = userMessages[i];
+                        chatArea.appendChild(userDiv);
+
+                        //ai message
+                        let aiDiv = document.createElement("div");
+                        aiDiv.classList.add("chat-message", "ai-message");
+                        aiDiv.textContent = aiMessages[i];
+                        chatArea.appendChild(aiDiv);
+                    }
+                            
+                } else {
+                    console.error("Form submission failed.");
+                }
+            } catch (error) {
+                console.error("Fetch error:", error);
+            }
+        });
+        history_form.appendChild(btn);
+        count += 1;
+      }
+
+      document.getElementById("chat-button").addEventListener("click", function() {
+          document.getElementById("chat-list").style.display = "block";
+          document.getElementById("data-list").style.display = "none";
+
+          const searchDropdown = document.querySelector("select[name='search']");
+          searchDropdown.value = "Web Search";
+          Array.from(searchDropdown.options).forEach(option => {
+                option.disabled = false;
+          });
+          
+      });
+
+      document.getElementById("data-button").addEventListener("click", function() {
+          document.getElementById("data-list").style.display = "block";
+          document.getElementById("chat-list").style.display = "none";
+
+          const searchDropdown = document.querySelector("select[name='search']");
+          searchDropdown.value = "Pdf/links Talks";
+          Array.from(searchDropdown.options).forEach(option => {
+                option.disabled = option.value !== "Pdf/links Talks";
+          });
+      });
+
+
+      function displayFileInfo() {
+        const fileInput = document.getElementById("fileUpload");
+        const fileInfo = document.getElementById("fileInfo");
+    
+        if (fileInput.files.length > 0) {
+          const file = fileInput.files[0];
+          fileInfo.innerHTML = `📄 ${file.name} (${(file.size / 1024).toFixed(2)} KB)<br><br>`;
+          fileInfo.style.display = "block";
+        } else {
+          fileInfo.innerHTML = "";
+          fileInfo.style.display = "none";
+        }
+      }
+      document.getElementById("fileUpload").addEventListener("change", displayFileInfo);
+
+      document.getElementById("messageForm").addEventListener("submit", async function(event) {
+        event.preventDefault();
+
+        let modelDropdown = document.querySelector("select[name='model']");
+        let searchDropdown = document.querySelector("select[name='search']");
+
+        let chatArea = document.querySelector(".chat-area");
+        let messageInput = document.querySelector("textarea[name='message']");
+        let userMessageText = messageInput.value.trim();
+        
+        if (!modelDropdown.value || !searchDropdown.value) {
+        alert("Please select both a model and a search type.");
+        return; 
+        }
+
+        if (!userMessageText) return; 
+
+        //user message
+        let userMessage = document.createElement("div");
+        userMessage.classList.add("chat-message", "user-message");
+        userMessage.textContent = userMessageText;
+        chatArea.appendChild(userMessage);
+        chatArea.scrollTop = chatArea.scrollHeight;
+
+        // before ai message
+        let aiMessage = document.createElement("div");
+        aiMessage.classList.add("chat-message", "ai-message");
+        aiMessage.innerHTML = `
+          <div class="typing-indicator">
+            <span></span><span></span><span></span>
+          </div>
+        `;
+        
+        chatArea.appendChild(aiMessage);
+        chatArea.scrollTop = chatArea.scrollHeight;
+
+        // send request
+        let formData = new FormData(this);
+
+        document.querySelector("textarea[name='message']").value = "";
+        document.getElementById("fileInfo").innerHTML = "";
+        formData.append("button_value", count);
+
+        let response = await fetch("/prompt", {
+            method: "POST",
+            body: formData
+        });
+
+        // ai response
+        if (response.ok) {
+            let result = await response.json();
+            // let formattedAIResponse = result.ai_response
+            //   .replace(/\*\*(.*?)\*\*/g, "<b>$1</b>") // Bold (**text**)
+            //   .replace(/(?<!\w)_(.*?)_(?!\w)/g, "<i>$1</i>") // Italic (_text_)
+            //   .replace(/~(.*?)~/g, "<u>$1</u>") // Underline (~text~)
+            //   .replace(/~~(.*?)~~/g, "<s>$1</s>") // Strikethrough (~~text~~)
+            //   .replace(/`(.*?)`/g, "<code>$1</code>") // Inline code (`code`)
+            //   .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre><code class="$1">$2</code></pre>') // Code block (```code```)
+            //   .replace(/###### (.*?)(\n|$)/g, "<h6>$1</h6>") // Headings
+            //   .replace(/##### (.*?)(\n|$)/g, "<h5>$1</h5>")
+            //   .replace(/#### (.*?)(\n|$)/g, "<h4>$1</h4>")
+            //   .replace(/### (.*?)(\n|$)/g, "<h3>$1</h3>")
+            //   .replace(/## (.*?)(\n|$)/g, "<h2>$1</h2>")
+            //   .replace(/# (.*?)(\n|$)/g, "<h1>$1</h1>")
+            //   .replace(/^> (.*?)(\n|$)/gm, "<blockquote>$1</blockquote>") // Blockquotes
+            //   .replace(/(?:^|\n)[*-] (.*?)(\n|$)/g, "<ul><li>$1</li></ul>") // Unordered list
+            //   .replace(/(?:^|\n)(\d+\.) (.*?)(\n|$)/g, "<ol><li>$2</li></ol>") // Ordered list
+            //   .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank">$1</a>') // Links
+            //   .replace(/!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)/g, '<img src="$2" alt="$1">') // Images
+            //   .replace(/^---$/gm, "<hr>"); // Horizontal line
+
+            let formattedAIResponse = marked.parse(result.ai_response);
+            let dataList = result.data_list;
+            aiMessage.innerHTML = formattedAIResponse; 
+            const dataFiles = document.getElementById("data-list")
+            dataFiles.innerHTML = "";
+            for (let i = 0; i < dataList.length; i++) {
+                  const btn = document.createElement("button");
+                  btn.type = "button";
+                  btn.textContent = dataList[i];
+                  btn.value = count;
+                  btn.classList.add("data-item");
+                  dataFiles.appendChild(btn);
+            }
+
+        } else {
+            console.error("Failed to send data.");
+        }
+    });
+
+    // trigger Data PDF logic
+    document.querySelector("select[name='search']").addEventListener("change", function () {
+        if (this.value === "Pdf/links Talks") {
+            document.getElementById("data-button").click(); 
+        }
+        if(this.value === "Deep Research"){
+          document.addEventListener("DOMContentLoaded", function () {
+                 
+    });       
+        }
+
+    });
+
+    document.querySelector("textarea[name='message']").addEventListener("keydown", function(event) {
+        if (event.key === "Enter" && !event.shiftKey) { 
+            event.preventDefault(); 
+            document.getElementById("messageForm").dispatchEvent(new Event("submit", { cancelable: true })); 
+        }
+    });
+    
+    document.addEventListener("DOMContentLoaded", function () {
+        const textarea = document.querySelector("textarea");
+        textarea.addEventListener("input", function () {
+            this.style.height = "auto"; 
+            this.style.height = this.scrollHeight + "px";
+        });
+    });
+    </script>
+    <script>
+      const welcomeMessage = document.getElementById("welcomeMessage");
+      const inputField = document.querySelector("textarea, input[type='text']");
+      const sendButton = document.querySelector("button[type='submit'], .send-button");
+    
+      function hideWelcome() {
+        if (welcomeMessage) {
+          welcomeMessage.style.display = "none";
+        }
+      }
+    
+      if (inputField) {
+        inputField.addEventListener("input", hideWelcome);
+      }
+    
+      if (sendButton) {
+        sendButton.addEventListener("click", hideWelcome);
+      }
+    </script>
+    
+  </body>
+</html>
